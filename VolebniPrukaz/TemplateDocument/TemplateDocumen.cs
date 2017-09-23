@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Novacode;
 
-namespace VolebniPrukaz.TemplateDocument
+namespace VolebniPrukaz
 {
     /// <summary>
     /// Replace all tags in document

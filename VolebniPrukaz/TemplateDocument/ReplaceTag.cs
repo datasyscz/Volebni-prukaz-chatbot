@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace VolebniPrukaz.TemplateDocument
+namespace VolebniPrukaz
 {
     [System.AttributeUsage(System.AttributeTargets.Property)]
     public class ReplaceTag : System.Attribute
