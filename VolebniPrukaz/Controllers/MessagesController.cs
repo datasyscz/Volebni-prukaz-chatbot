@@ -18,7 +18,13 @@ namespace VolebniPrukaz
         public async Task<HttpResponseMessage> Post([FromBody] Activity activity)
         {
             if (activity.Type == ActivityTypes.Message)
+            {
+                //Reset conversation on facebook start
+                if(activity.Text == "STARTED_CON")
+                    activity.GetStateClient().BotState.DeleteStateForUser(activity.ChannelId, activity.From.Id);
+
                 await Conversation.SendAsync(activity, () => new RootDialog());
+            }
             else
                 HandleSystemMessage(activity);
             var response = Request.CreateResponse(HttpStatusCode.OK);
