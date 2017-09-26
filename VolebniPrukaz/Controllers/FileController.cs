@@ -19,7 +19,7 @@ namespace VolebniPrukaz.Controllers
         {
             var stream = new MemoryStream();
 
-            var doc = DocX.Load("./vzor-zadosti-o-vp.docx");
+            var doc = DocX.Load(System.Web.HttpContext.Current.Server.MapPath("/vzor-zadosti-o-vp.docx"));
             doc.ReplaceText("%JMENO%", name);
             doc.ReplaceText("%NAROZENI%", birthDate);
             doc.ReplaceText("%TRVALAADRESA%", permanentAddress);
@@ -28,6 +28,7 @@ namespace VolebniPrukaz.Controllers
             doc.ReplaceText("%ADRESA%", officeAddress);
             doc.ReplaceText("%PSC%", officePostalCode);
             doc.ReplaceText("%MESTO%", officeCity);
+            doc.SaveAs(stream);
 
             var result = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -36,7 +37,7 @@ namespace VolebniPrukaz.Controllers
             result.Content.Headers.ContentDisposition =
                 new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
                 {
-                    FileName = "vzor-zadosti-o-vp.docx"
+                    FileName = "zadost-o-vp.docx"
                 };
             result.Content.Headers.ContentType =
                 new MediaTypeHeaderValue("application/octet-stream");
