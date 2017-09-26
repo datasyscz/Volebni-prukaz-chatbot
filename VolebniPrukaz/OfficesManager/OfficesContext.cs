@@ -18,13 +18,13 @@ namespace VolebniPrukaz.OfficesManager
 
         private string _file { get; }
 
-        public List<Office> GetOffices(int zip)
+        public List<Office> GetOffices(string zip)
         {
             using (var file = File.OpenText(_file))
             using (var reader = new JsonTextReader(file))
             {
                 var collection = JToken.ReadFrom(reader).ToObject<List<Office>>();
-                return collection.Where(a => a.zip == zip.ToString()).ToList();
+                return collection.Where(a => a.zip == zip).ToList();
             }
         }
     }

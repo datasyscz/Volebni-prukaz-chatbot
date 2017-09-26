@@ -35,7 +35,7 @@ namespace VolebniPrukaz.Controllers
                 Content = new ByteArrayContent(stream.ToArray())
             };
             result.Content.Headers.ContentDisposition =
-                new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+                new ContentDispositionHeaderValue("attachment")
                 {
                     FileName = "zadost-o-vp.docx"
                 };

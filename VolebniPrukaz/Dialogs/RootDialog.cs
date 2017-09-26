@@ -10,13 +10,18 @@ using VolebniPrukaz.DialogModels;
 using VolebniPrukaz.Forms;
 using System.Web;
 using System.Web.Hosting;
+using VolebniPrukaz.OfficesManager;
+using System.Linq;
 
 namespace VolebniPrukaz.Dialogs
 {
     public class RootDialog
     {
-        protected static PersonalDataDM personalDataDM;
-        protected static AddressDM addressDM;
+        protected enum ConversationDataProperties
+        {
+            PersonalDataDM,
+            AddressDM
+        }
 
         public static IDialog<object> StartWithHelloChain()
         {
@@ -44,15 +49,29 @@ namespace VolebniPrukaz.Dialogs
                     return Chain.From(() => FormDialog.FromForm(() => PersonalDataForm.GetPersonalDataForm(), FormOptions.None));
                 })
                 .ContinueWith<PersonalDataDM, AddressDM>(async (ctx, res) => {
-                    personalDataDM = await res;
-                    ctx.ConversationData.SetValue(nameof(personalDataDM), personalDataDM);
+                    var personalData = await res;
+                    ctx.ConversationData.SetValue(ConversationDataProperties.PersonalDataDM.ToString(), personalData);
                     return new AddressDialog("Napište mi prosím adresu Vašeho trvalého bydliště.");
                 })
                 .ContinueWith<AddressDM, object>(async (ctx, res) => {
                     var addressDM = await res;
-                    personalDataDM = ctx.ConversationData.GetValue<PersonalDataDM>(nameof(personalDataDM));
-                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalDataDM);
-                    return Chain.Return(voterPassServiceUri.ToString()).PostToUser();
+                    var office = new OfficesContext(HttpContext.Current.Server.MapPath("/offices.json"))
+                                        .GetOffices(addressDM.Zip).FirstOrDefault();
+                    var personalData = ctx.ConversationData.GetValue<PersonalDataDM>(ConversationDataProperties.PersonalDataDM.ToString());
+
+                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office);
+
+                    var replyMessage = ctx.MakeMessage();
+                    replyMessage.Text = "Zde je Váš vygenerovaný volební průkaz.";
+                    replyMessage.Attachments.Add(new Attachment()
+                    {
+                        ContentUrl = voterPassServiceUri.ToString(),
+                        ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        Name = "zadost-o-vp.docx"
+                    });
+
+                    await ctx.PostAsync(replyMessage);
+                    return Chain.Return(string.Empty);
                 })
                 .ContinueWith(async (ctx, res) => {
                      await res;
@@ -61,16 +80,14 @@ namespace VolebniPrukaz.Dialogs
                          var isConfirmed = await res2;
 
                          if (isConfirmed)
-                         {
                              return StartOverChain();
-                         }
                          else
                              return Chain.Return("Rozloučení");
                      });
                 });
         }
 
-        private static Uri GetVoterPassUri(AddressDM address, PersonalDataDM personalData)
+        private static Uri GetVoterPassUri(AddressDM address, PersonalDataDM personalData, Office office)
         {
             string baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Authority;
             string controllerPath = "/api/file";
@@ -79,10 +96,10 @@ namespace VolebniPrukaz.Dialogs
             query += $"&birthDate={personalData.BirthDate}";
             query += $"&phone={personalData.Phone}";
             query += $"&permanentAddress={address.ToAddressString()}";
-            query += $"&officeName=officeName";
-            query += $"&officeAddress=officeAddress";
-            query += $"&officePostalCode=officePostalCode";
-            query += $"&officeCity=officeCity";
+            query += $"&officeName={office.name}";
+            query += $"&officeAddress={office.address}";
+            query += $"&officePostalCode={office.zip}";
+            query += $"&officeCity={office.city}";
 
             return new Uri(baseUrl + controllerPath + query);
         }
