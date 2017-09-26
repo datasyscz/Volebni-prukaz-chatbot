@@ -80,7 +80,7 @@ namespace VolebniPrukaz.Dialogs
             }
             else
             {
-                await context.SayAsync(_questionText);
+                await context.SayAsync(_addressNotFoundByGoogleText);
                 var hotelsFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm, FormOptions.PromptInStart);
                 context.Call(hotelsFormDialog, SetAddressFormToDM);
             }
