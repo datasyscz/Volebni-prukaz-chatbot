@@ -66,7 +66,7 @@ namespace VolebniPrukaz.Dialogs
                              return StartOverChain();
                          }
                          else
-                             return Chain.Return("Rozloučení");
+                             return Chain.Return("Rád jsem pomohl a děkuji.");
                      });
                 });
         }
