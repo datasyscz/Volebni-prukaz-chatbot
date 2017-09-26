@@ -23,15 +23,16 @@ namespace VolebniPrukaz
                 if(activity.Text == "STARTED_CON")
                     activity.GetStateClient().BotState.DeleteStateForUser(activity.ChannelId, activity.From.Id);
 
-                await Conversation.SendAsync(activity, () => new RootDialog());
+                await Conversation.SendAsync(activity, () => RootDialog.StartWithHelloChain());
             }
             else
-                HandleSystemMessage(activity);
+                await HandleSystemMessage(activity);
+
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return response;
         }
 
-        private Activity HandleSystemMessage(Activity message)
+        private async Task HandleSystemMessage(Activity message)
         {
             if (message.Type == ActivityTypes.DeleteUserData)
             {
@@ -55,9 +56,8 @@ namespace VolebniPrukaz
             }
             else if (message.Type == ActivityTypes.Ping)
             {
-            }
 
-            return null;
+            }
         }
     }
 }

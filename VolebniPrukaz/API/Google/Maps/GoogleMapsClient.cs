@@ -17,7 +17,7 @@ namespace Google.Maps
         public GoogleMapsClient(string apiKey = null)
         {
             if (apiKey == null)
-                _apiKey = WebConfigurationManager.AppSettings["GooleApiKey"];
+                _apiKey = WebConfigurationManager.AppSettings["GoogleApiKey"];
             else
                 _apiKey = apiKey;
         }

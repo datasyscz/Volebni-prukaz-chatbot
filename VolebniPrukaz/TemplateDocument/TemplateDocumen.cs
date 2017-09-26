@@ -53,7 +53,6 @@ namespace VolebniPrukaz
         private async Task<DocX> LoadFile()
         {
             return await Task.Run(() => DocX.Load(_templateDocument.FullName));
-            ;
         }
     }
 }

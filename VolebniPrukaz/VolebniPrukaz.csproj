@@ -118,8 +118,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
+    <Compile Include="DialogModels\AddressDM.cs" />
+    <Compile Include="DialogModels\PersonalDataDM.cs" />
+    <Compile Include="Dialogs\AddressDialog.cs" />
+    <Compile Include="Dialogs\PersonalDataDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
+    <Compile Include="FileModels\VoterPassFM.cs" />
+    <Compile Include="Forms\AddressForm.cs" />
+    <Compile Include="Forms\PersonalDataForm.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -135,6 +143,7 @@
     </Content>
     <None Include="Properties\PublishProfiles\VolebniPrukaz - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - Web Deploy.pubxml" />
+    <Content Include="vzor-zadosti-o-vp.docx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
