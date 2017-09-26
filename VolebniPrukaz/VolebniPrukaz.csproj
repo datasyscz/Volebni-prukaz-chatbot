@@ -125,6 +125,8 @@
     </Compile>
     <Compile Include="API\Google\Maps\Geocode.cs" />
     <Compile Include="API\Google\Maps\GoogleMapsClient.cs" />
+    <Compile Include="OfficesManager\Office.cs" />
+    <Compile Include="OfficesManager\OfficesContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TemplateDocument\ReplaceTag.cs" />
     <Compile Include="TemplateDocument\TemplateDocumen.cs" />
@@ -133,6 +135,7 @@
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="offices.json" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
