@@ -23,6 +23,8 @@ namespace VolebniPrukaz.OfficesManager
             using (var file = File.OpenText(_file))
             using (var reader = new JsonTextReader(file))
             {
+                //replace space chats
+                zip = zip.Replace(" ", "");
                 var collection = JToken.ReadFrom(reader).ToObject<List<Office>>();
                 return collection.Where(a => a.zip == zip).ToList();
             }
