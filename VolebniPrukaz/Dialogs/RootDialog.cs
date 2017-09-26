@@ -82,7 +82,7 @@ namespace VolebniPrukaz.Dialogs
                          if (isConfirmed)
                              return StartOverChain();
                          else
-                             return Chain.Return("Rozloučení");
+                             return Chain.Return("Rád jsem pomohl a děkuji.");
                      });
                 });
         }

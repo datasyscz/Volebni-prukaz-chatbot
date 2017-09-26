@@ -51,12 +51,25 @@ namespace VolebniPrukaz.Forms
                         //Check if name or surname
                         if (date != null && date != DateTime.MinValue)
                         {
-                            return new ValidateResult
+                            if (date.Value.AddYears(18) <= DateTime.Now)
                             {
-                                IsValid = true,
-                                Feedback = null,
-                                Value = response
-                            };
+                                return new ValidateResult
+                                {
+                                    IsValid = true,
+                                    Feedback = null,
+                                    Value = response
+                                };
+                            }
+                            else
+                            {
+                                return new ValidateResult
+                                {
+                                    IsValid = false,
+                                    Feedback = "Volit můžou bohužel jen osoby starší 18 let.",
+                                    Value = response
+                                };
+                            }
+                            
                         }
                         else
                         {

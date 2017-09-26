@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using VolebniPrukaz.API.Facebook;
 using VolebniPrukaz.Dialogs;
 
 namespace VolebniPrukaz
@@ -17,6 +19,13 @@ namespace VolebniPrukaz
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody] Activity activity)
         {
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                FacebookClient fbClient = new FacebookClient();
+                fbClient.SendTyping(activity.From.Id);
+            }).Start();
+
             if (activity.Type == ActivityTypes.Message)
             {
                 //Reset conversation on facebook start
