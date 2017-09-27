@@ -21,9 +21,12 @@ namespace VolebniPrukaz
         {
             new Thread(() =>
             {
-                Thread.CurrentThread.IsBackground = true;
-                FacebookClient fbClient = new FacebookClient();
-                fbClient.SendTyping(activity.From.Id);
+                if (activity.ChannelId == ChannelIds.Facebook)
+                {
+                    Thread.CurrentThread.IsBackground = true;
+                    FacebookClient fbClient = new FacebookClient();
+                    fbClient.SendTyping(activity.From.Id);
+                }
             }).Start();
 
             if (activity.Type == ActivityTypes.Message)
