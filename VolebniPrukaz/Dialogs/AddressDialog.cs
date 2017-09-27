@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
-using VolebniPrukaz.API.Facebook;
 using VolebniPrukaz.DialogModels;
 using VolebniPrukaz.Forms;
 
@@ -62,49 +61,70 @@ namespace VolebniPrukaz.Dialogs
             var geocodeResult = await _mapApiClient.GetGeocodeData(addressActivity.Text);
             var firstResultAddress = ((Geocode)geocodeResult.Data).results.FirstOrDefault();
 
-            Activity replyToConversation = (Activity)context.MakeMessage();
-            Attachment card;
-
-            if (geocodeResult.CorrectResponse)
+            try
             {
-                _recognizedAddress = firstResultAddress.MapGeocodeToAddressDM();
-                var plAttachment = await GetAddressConfirmationAttachment(_recognizedAddress, context);
+                if (geocodeResult.CorrectResponse)
+                {
+                    Activity replyToConversation = (Activity)context.MakeMessage();
 
-                replyToConversation.AttachmentLayout = AttachmentLayoutTypes.List;
-                replyToConversation.Attachments = new List<Microsoft.Bot.Connector.Attachment>();
+                    _recognizedAddress = firstResultAddress.MapGeocodeToAddressDM();
+                    string addressString = _recognizedAddress.ToAddressString();
+                    var cardText = $"{_confirmText}\r\n{addressString}";
 
-                replyToConversation.Attachments.Add(plAttachment);
-                await context.PostAsync(replyToConversation);
+                    if (replyToConversation.ChannelId == ChannelIds.Facebook)
+                    {
+                        var mapImageDataResult = await _mapApiClient.GetMapImageData(addressString, zoom: 17);
+                        var mapMessage = context.MakeMessage();
+                        mapMessage.Attachments.Add(new Attachment { ContentUrl = (string)mapImageDataResult.Data, ContentType = "image/png" });
+                        await context.PostAsync(mapMessage);
 
-                context.Wait(ConfirmRecognition);
+                        var quickReplies = new List<API.Facebook.Quick_Replies>(); ;
+                        quickReplies.Add(new API.Facebook.Quick_Replies() { content_type = "text", title = "Ano", payload = "Ano" });
+                        quickReplies.Add(new API.Facebook.Quick_Replies() { content_type = "text", title = "Ne", payload = "Ne" });
+
+                        API.Facebook.QuickReplyData quickReplyData = new API.Facebook.QuickReplyData()
+                        {
+                            text = cardText,
+                            quick_replies = quickReplies.ToArray()
+                        };
+                        
+                        replyToConversation.ChannelData = quickReplyData;
+                    }
+                    else
+                    {
+                        replyToConversation.AttachmentLayout = AttachmentLayoutTypes.List;
+                        replyToConversation.Attachments = new List<Microsoft.Bot.Connector.Attachment>();
+                        var plAttachment = await GetAddressConfirmationAttachment(context, _recognizedAddress, cardText);
+                        replyToConversation.Attachments.Add(plAttachment);
+                    }
+                    
+                    await context.PostAsync(replyToConversation);
+
+                    context.Wait(ConfirmRecognition);
+                }
+                else
+                {
+                    await context.SayAsync(_questionText);
+                    var hotelsFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm, FormOptions.PromptInStart);
+                    context.Call(hotelsFormDialog, SetAddressFormToDM);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await context.SayAsync(_questionText);
-                var hotelsFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm, FormOptions.PromptInStart);
-                context.Call(hotelsFormDialog, SetAddressFormToDM);
+                await context.SayAsync(ex.Message);
             }
         }
 
-        public async Task<Attachment> GetAddressConfirmationAttachment(string address, IDialogContext context)
+        public async Task<Attachment> GetAddressConfirmationAttachment(IDialogContext context, string address, string cardText)
         {
-            Attachment attch;
-            if (context.MakeMessage().ChannelId == ChannelIds.Facebook)
-            {
-                var msg = context.MakeMessage();
-                //Send quick replay
-            }
-            else
-            {
+            var mapImageDataResult = await _mapApiClient.GetMapImageData(address, zoom: 17);
 
-                var mapImageDataResult = await _mapApiClient.GetMapImageData(address, zoom: 17);
+            List<CardImage> cardImages = new List<CardImage>();
 
-                List<CardImage> cardImages = new List<CardImage>();
+            if (mapImageDataResult.CorrectResponse)
+                cardImages.Add(new CardImage { Url = (string)mapImageDataResult.Data });
 
-                if (mapImageDataResult.CorrectResponse)
-                    cardImages.Add(new CardImage {Url = (string) mapImageDataResult.Data});
-
-                List<CardAction> cardButtons = new List<CardAction>()
+            List<CardAction> cardButtons = new List<CardAction>()
                 {
                     new CardAction()
                     {
@@ -120,23 +140,20 @@ namespace VolebniPrukaz.Dialogs
                     }
                 };
 
-                var cardText = $"{_confirmText}\r\n\r\n*{address}*";
+            Attachment attchment = new HeroCard()
+            {
+                Images = cardImages,
+                Text = cardText,
+                Buttons = cardButtons,
+            }.ToAttachment();
 
-                attch = new HeroCard()
-                {
-                    Images = cardImages,
-                    Text = cardText,
-                    Buttons = cardButtons,
-                }.ToAttachment();
-            }
-
-            return attch;
+            return attchment;
         }
 
-        public async Task<Attachment> GetAddressConfirmationAttachment(AddressDM address, IDialogContext context)
+        public async Task<Attachment> GetAddressConfirmationAttachment(IDialogContext context, AddressDM address, string cardText)
         {
             var addressString = $"{address.Street} {address.HouseNumber}, {address.Zip} {address.City}, Česká republika";
-            return await GetAddressConfirmationAttachment(addressString, context);
+            return await GetAddressConfirmationAttachment(context, addressString, cardText);
         }
 
         private async Task SetAddressFormToDM(IDialogContext context, IAwaitable<AddressDM> result)

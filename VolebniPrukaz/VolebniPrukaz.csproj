@@ -124,6 +124,7 @@
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="DialogModels\AddressDM.cs" />
     <Compile Include="DialogModels\PersonalDataDM.cs" />
+    <Compile Include="DialogModels\VotePerson.cs" />
     <Compile Include="Dialogs\AddressDialog.cs" />
     <Compile Include="Dialogs\PersonalDataDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
@@ -146,6 +147,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="offices.json" />
+    <Content Include="plna-moc-volby-2017.docx" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - Web Deploy.pubxml" />
     <Content Include="vzor-zadosti-o-vp.docx" />

@@ -14,7 +14,7 @@ namespace VolebniPrukaz.API.Facebook
     }
 
     [Serializable]
-    public class QuickReplayData
+    public class QuickReplyData
     {
         public string text { get; set; }
         public Quick_Replies[] quick_replies { get; set; }
