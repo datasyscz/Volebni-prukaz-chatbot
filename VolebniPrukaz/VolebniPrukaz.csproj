@@ -118,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\Facebook\FacebookClient.cs" />
+    <Compile Include="API\Facebook\Quick_Replies.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
