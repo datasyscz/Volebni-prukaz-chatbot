@@ -22,9 +22,11 @@ namespace VolebniPrukaz.Dialogs
     {
         protected enum ConversationDataProperties
         {
-            PersonalDataDM,
-            AddressDM,
-            VotePeson
+            PersonalData,
+            Address,
+            Office,
+            VotePeson,
+            MainChainFirstPass
         }
 
         public static IDialog<object> StartWithHelloChain()
@@ -34,30 +36,48 @@ namespace VolebniPrukaz.Dialogs
                 .ContinueWith(async (ctx, res) =>
                 {
                     await res;
-                    return MainChain();
+                    return MainChain(ctx);
                 });
         }
 
-        public static IDialog<object> StartOverChain()
+        public static IDialog<object> StartOverChain(IBotContext ctx)
         {
-            return MainChain();
+            return MainChain(ctx, isFirstPass: false);
         }
 
-        public static IDialog<object> MainChain()
+        public static IDialog<object> MainChain(IBotContext context, bool isFirstPass = true)
         {
+            context.ConversationData.SetValue(ConversationDataProperties.MainChainFirstPass.ToString(), isFirstPass);
+
             return Chain.Return("Pojďme na to.")
                  .PostToUser()
                  .ContinueWith(async (ctx, res) =>
                  {
                      await res;
-                     return Chain.From(() =>
-                        FormDialog.FromForm(() =>
-                        {
-                            return new FormBuilder<VotePerson>()
-                            .AddRemainingFields()
-                            .Confirm("No verification will be shown", state => false)
-                            .Build();
-                        }, FormOptions.None));
+                     var isFirstPassData = ctx.ConversationData.GetValue<bool>(ConversationDataProperties.MainChainFirstPass.ToString());
+
+                     if (isFirstPassData)
+                     {
+                         return Chain.From(() =>
+                            FormDialog.FromForm(() =>
+                            {
+                                return new FormBuilder<VotePerson>()
+                                .AddRemainingFields()
+                                .Confirm("", state => false)
+                                .Build();
+                            }, FormOptions.None));
+                     }
+                     else
+                     {
+                         return Chain.From(() =>
+                            FormDialog.FromForm(() =>
+                            {
+                                return new FormBuilder<VotePerson>()
+                                .AddRemainingFields()
+                                .Confirm("", state => false)
+                                .Build();
+                            }, FormOptions.PromptInStart));
+                     }
                  })
                 .ContinueWith(async (ctx, res) =>
                 {
@@ -67,99 +87,102 @@ namespace VolebniPrukaz.Dialogs
                 .ContinueWith<PersonalDataDM, AddressDM>(async (ctx, res) =>
                 {
                     var personalData = await res;
-                    ctx.ConversationData.SetValue(ConversationDataProperties.PersonalDataDM.ToString(), personalData);
+                    ctx.ConversationData.SetValue(ConversationDataProperties.PersonalData.ToString(), personalData);
                     return new AddressDialog("Napište mi prosím adresu Vašeho trvalého bydliště..");
                 })
                 .ContinueWith<AddressDM, object>(async (ctx, res) =>
                 {
-                    try
+                    var addressDM = await res;
+                    var office = new OfficesContext(HttpContext.Current.Server.MapPath("/offices.json"))
+                                        .GetOffices(addressDM.Zip).FirstOrDefault();
+
+                    var personalData = ctx.ConversationData.GetValue<PersonalDataDM>(ConversationDataProperties.PersonalData.ToString());
+                    var voterPerson = ctx.ConversationData.GetValue<VotePerson>(ConversationDataProperties.VotePeson.ToString());
+
+                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office, voterPerson);
+                    var warrantServiceUri = GetWarrantPassUri();
+
+                    if (office == null)
                     {
-                        var addressDM = await res;
-                        var office = new OfficesContext(HttpContext.Current.Server.MapPath("/offices.json"))
-                                            .GetOffices(addressDM.Zip).FirstOrDefault();
-                        var personalData = ctx.ConversationData.GetValue<PersonalDataDM>(ConversationDataProperties.PersonalDataDM.ToString());
-                        var voterPerson = ctx.ConversationData.GetValue<VotePerson>(ConversationDataProperties.VotePeson.ToString());
-                        
-                        var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office, voterPerson);
-                        var warrantServiceUri = GetWarrantPassUri();
+                        var officeNotFoundMsg = ctx.MakeMessage();
+                        officeNotFoundMsg.Text = "Bohužel jsem nemohl najít městský úřad odpovídající Vašemu bydlišti. Vyplňte ho prosím do vygenerované žádosti.";
+                        await ctx.PostAsync(officeNotFoundMsg);
+                    }
 
-                        var replyMessage = ctx.MakeMessage();
-                        replyMessage.Text = "Zde si můžete stáhnout";
+                    var replyMessage = ctx.MakeMessage();
+                    replyMessage.Text = "Zde si můžete stáhnout";
 
-                        if (replyMessage.ChannelId == ChannelIds.Facebook)
+                    if (replyMessage.ChannelId == ChannelIds.Facebook)
+                    {
+                        var buttons = new List<CardAction>();
+
+                        buttons.Add(new CardAction()
                         {
-                            var buttons = new List<CardAction>();
+                            Type = "openUrl",
+                            Value = voterPassServiceUri.ToString(),
+                            Title = "Žádost o volební průkaz"
+                        });
 
+                        if (voterPerson.Type == VotePersonType.AuthorizedPerson)
+                        {
                             buttons.Add(new CardAction()
                             {
                                 Type = "openUrl",
-                                Value = voterPassServiceUri.ToString(),
-                                Title = "Váš volební průkaz"
+                                Value = warrantServiceUri.ToString(),
+                                Title = "Plnou moc"
                             });
-
-                            if (voterPerson.Type == VotePersonType.AuthorizedPerson)
-                            {
-                                buttons.Add(new CardAction()
-                                {
-                                    Type = "openUrl",
-                                    Value = warrantServiceUri.ToString(),
-                                    Title = "Vaší plnou moc"
-                                });
-                            }
-
-                            HeroCard hc = new HeroCard()
-                            {
-                                Buttons = buttons
-                            };
-
-                            replyMessage.Attachments.Add(hc.ToAttachment());
                         }
-                        else
+
+                        HeroCard hc = new HeroCard()
+                        {
+                            Buttons = buttons
+                        };
+
+                        replyMessage.Attachments.Add(hc.ToAttachment());
+                    }
+                    else
+                    {
+                        replyMessage.Attachments.Add(new Attachment()
+                        {
+                            ContentUrl = voterPassServiceUri.ToString(),
+                            ContentType = "application/msword",
+                            Name = "zadost-o-vp.docx"
+                        });
+
+                        if (voterPerson.Type == VotePersonType.AuthorizedPerson)
                         {
                             replyMessage.Attachments.Add(new Attachment()
                             {
-                                ContentUrl = voterPassServiceUri.ToString(),
+                                ContentUrl = warrantServiceUri.ToString(),
                                 ContentType = "application/msword",
-                                Name = "zadost-o-vp.docx"
+                                Name = "plna-moc-volby-2017.docx"
                             });
-
-                            if (voterPerson.Type == VotePersonType.AuthorizedPerson)
-                            {
-                                replyMessage.Attachments.Add(new Attachment()
-                                {
-                                    ContentUrl = warrantServiceUri.ToString(),
-                                    ContentType = "application/msword",
-                                    Name = "plna-moc-volby-2017.docx"
-                                });
-                            }
                         }
+                    }
 
-                        await ctx.PostAsync(replyMessage);
-                    }
-                    catch (Exception ex)
-                    {
-                        var replyMessage = ctx.MakeMessage();
-                        replyMessage.Text = ex.Message;
-                        await ctx.PostAsync(replyMessage);
-                    }
+                    await ctx.PostAsync(replyMessage);
 
                     return Chain.Return(string.Empty);
+                })
+                .ContinueWith(async (ctx, res) => {
+                    await res;
+
+                    return Chain.Return("Žádost o volební průkaz můžete zaslat poštou, nebo pomocí datové schránky.")
+                    .PostToUser();
                 })
                 .ContinueWith(async (ctx, res) =>
                 {
                     await Task.Run(() => Thread.Sleep(5000));
                     await res;
 
-                    return Chain.From(() => new PromptDialog.PromptConfirm("Chcete vygenerovat nový volební průkaz?", "Bohužel nerozumím.", 3))
+                    return new ConfirmDialog("Přejete si pokračovat vytvořením nové žádosti?", 
+                        "Pokračovat", 
+                        "Bohužel nerozumím", 
+                        possibleAnswers: new[] { "ano", "jo", "pokračovat", "přeji", "přeju" })
                     .ContinueWith(async (ctx2, res2) =>
                     {
-                        var isConfirmed = await res2;
-
-                        if (isConfirmed)
-                            return StartOverChain();
-                        else
-                            return Chain.Return("Rád jsem pomohl a děkuji.")
-                            .PostToUser();
+                        await res2;
+                        return StartOverChain(ctx2);
                     });
                 });
         }
@@ -204,10 +227,10 @@ namespace VolebniPrukaz.Dialogs
             query += $"&birthDate={personalData.BirthDate}";
             query += $"&phone={personalData.Phone}";
             query += $"&permanentAddress={address.ToAddressString()}";
-            query += $"&officeName={office.name}";
-            query += $"&officeAddress={office.address}";
-            query += $"&officePostalCode={office.zip}";
-            query += $"&officeCity={office.city}";
+            query += $"&officeName={office?.name ?? string.Empty}";
+            query += $"&officeAddress={office?.address ?? string.Empty}";
+            query += $"&officePostalCode={office?.zip ?? string.Empty}";
+            query += $"&officeCity={office?.city ?? string.Empty}";
             query += $"&voterPersonType={votePerson.Type}";
 
             return new Uri(baseUrl + controllerPath + query);

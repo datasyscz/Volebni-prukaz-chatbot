@@ -15,7 +15,7 @@ namespace VolebniPrukaz.DialogModels
         [Describe("Zplnomocněná osoba", message: "AuthorizedPerson")]
         [Terms("AuthorizedPerson")]
         AuthorizedPerson,
-        [Describe("Zaslat na adresu", message: "SendHome")]
+        [Describe("Zaslat na adresu TB", message: "SendHome")]
         [Terms("SendHome")]
         SendHome
     }
@@ -23,6 +23,7 @@ namespace VolebniPrukaz.DialogModels
     [Serializable]
     public class VotePerson
     {
+        [Describe("způsob převzetí")]
         public VotePersonType? Type { get; set; }
     }
 }

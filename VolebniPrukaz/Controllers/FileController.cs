@@ -25,10 +25,21 @@ namespace VolebniPrukaz.Controllers
             doc.ReplaceText("%NAROZENI%", birthDate);
             doc.ReplaceText("%TRVALAADRESA%", permanentAddress);
             doc.ReplaceText("%TELEFON%", phone);
-            doc.ReplaceText("%URAD%", officeName);
-            doc.ReplaceText("%ADRESA%", officeAddress);
-            doc.ReplaceText("%PSC%", officePostalCode);
-            doc.ReplaceText("%MESTO%", officeCity);
+
+            if (!string.IsNullOrEmpty(officeName))
+            {
+                doc.ReplaceText("%URAD%", officeName);
+                doc.ReplaceText("%ADRESA%", officeAddress);
+                doc.ReplaceText("%PSC%", officePostalCode);
+                doc.ReplaceText("%MESTO%", officeCity);
+            }
+            else
+            {
+                doc.ReplaceText("%URAD%", "Městský úřad:");
+                doc.ReplaceText("%ADRESA%", string.Empty);
+                doc.ReplaceText("%PSC%", string.Empty);
+                doc.ReplaceText("%MESTO%", string.Empty);
+            }
 
             if (voterPersonType == VotePersonType.Personaly)
                 doc.ReplaceText("%VOTERTYPE1%", "x");
