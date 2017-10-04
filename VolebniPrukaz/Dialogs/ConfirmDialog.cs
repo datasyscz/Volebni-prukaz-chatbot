@@ -29,8 +29,15 @@ namespace VolebniPrukaz.Dialogs
 
         public async Task StartAsync(IDialogContext context)
         {
+            //if (!string.IsNullOrEmpty(_message))
+            //{
+            //    var msg = CreateConfirmMessage(context);
+            //    await context.PostAsync(msg);
+            //}
+
             var msg = CreateConfirmMessage(context);
             await context.PostAsync(msg);
+
             context.Wait(Resume);
         }
 
@@ -46,14 +53,21 @@ namespace VolebniPrukaz.Dialogs
 
             if (msgText.ToLower() == _buttonText.ToLower() || _possibleAnswers.Any(a => msgWords.Any(w => w.ToLower() == a.ToLower())))
             {
-                context.Done(result);
+                context.Done(await result);
             }
             else
             {
                 await context.PostAsync(_dontUnderstand);
 
+                //if (!string.IsNullOrEmpty(_message))
+                //{
+                //    var msg = CreateConfirmMessage(context);
+                //    await context.PostAsync(msg);
+                //}
+
                 var msg = CreateConfirmMessage(context);
                 await context.PostAsync(msg);
+
                 context.Wait(Resume);
             }
         }
@@ -77,8 +91,7 @@ namespace VolebniPrukaz.Dialogs
                 {
                     new Attachment
                     {
-                        ContentType = "application/vnd.microsoft.card.hero"
-                        ,
+                        ContentType = "application/vnd.microsoft.card.hero",
                         Content = new HeroCard
                         {
                             Text = _message,

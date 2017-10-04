@@ -15,7 +15,7 @@ namespace VolebniPrukaz.Forms
         {
             return new FormBuilder<PersonalDataDM>()
                 .Field(nameof(PersonalDataDM.Name),
-                    prompt: "Zadejte prosím Vaše celé jméno.",
+                    prompt: "Poprosím Vás o zadání Vašeho celého jména.",
                     validate: async (state, response) =>
                     {
                         string str = (string)response;
@@ -35,13 +35,13 @@ namespace VolebniPrukaz.Forms
                             return new ValidateResult
                             {
                                 IsValid = false,
-                                Feedback = "Zadejte prosím jméno a přijmení, ne pouze jméno nebo přijmení. Potřebuji to do volebního průkazu.",
+                                Feedback = "Takové jméno neznám. Je nutné zadat celé jméno - jméno a příjmení..",
                                 Value = response
                             };
                         }
                     })
                 .Field(nameof(PersonalDataDM.BirthDate),
-                    prompt: "Zadejte prosím Vaše datum narození.",
+                    prompt: "Poprosím Vás o zadání Vašeho data narození.",
                     validate: async (state, response) =>
                     {
                         state.BirthDate = (string)response;
@@ -51,7 +51,7 @@ namespace VolebniPrukaz.Forms
                         //Check if name or surname
                         if (date != null && date != DateTime.MinValue)
                         {
-                            if (date.Value.AddYears(18) <= DateTime.Now)
+                            if (date.Value.AddYears(18) <= DateTime.Now && date.Value > DateTime.Now.AddYears(-130))
                             {
                                 return new ValidateResult
                                 {
@@ -60,12 +60,21 @@ namespace VolebniPrukaz.Forms
                                     Value = response
                                 };
                             }
+                            else if (date.Value <= DateTime.Now.AddYears(-130))
+                            {
+                                return new ValidateResult
+                                {
+                                    IsValid = false,
+                                    Feedback = "Není Vám nějak moc?! Nejsem si jist, zda k volbám dojdete… 😦",
+                                    Value = response
+                                };
+                            }
                             else
                             {
                                 return new ValidateResult
                                 {
                                     IsValid = false,
-                                    Feedback = "Volit můžou bohužel jen osoby starší 18 let.",
+                                    Feedback = "Lidé mladší 18 let k volbám nemohou.",
                                     Value = response
                                 };
                             }
@@ -76,13 +85,13 @@ namespace VolebniPrukaz.Forms
                             return new ValidateResult
                             {
                                 IsValid = false,
-                                Feedback = "Bohužel nerozumím, je mi teprve pár dní. Zadejte prosím datum například ve formátu 6.5.1991",
+                                Feedback = "Bohužel nerozumím, je mi teprve pár dní. Napište mi datum například ve formátu DD.MM.RRRR",
                                 Value = response
                             };
                         }
                     })
                 .Field(nameof(PersonalDataDM.Phone),
-                    prompt: "Zadejte prosím Váš telefon.",
+                    prompt: "Poprosím Vás o zadání Vašeho telefonního čísla.",
                     validate: async (state, response) =>
                     {
                         string phone = (string) response;
@@ -103,7 +112,7 @@ namespace VolebniPrukaz.Forms
                             return new ValidateResult
                             {
                                 IsValid = false,
-                                Feedback = "Bohužel nerozumím, je mi teprve pár dní. Rozumím například tomuto formátu telefoního čísla 654 987 321",
+                                Feedback = "Bohužel nerozumím, je mi teprve pár dní. Napište mi telefonní číslo například ve formátu 606 333 111.",
                                 Value = response
                             };
                         }

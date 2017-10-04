@@ -9,13 +9,13 @@ namespace VolebniPrukaz.DialogModels
 {
     public enum VotePersonType
     {
-        [Describe("Převezmu osobně", message: "Personaly")]
+        [Describe("Vyzvednu osobně", message: "Personaly")]
         [Terms("Personaly")]
         Personaly,
-        [Describe("Zplnomocněná osoba", message: "AuthorizedPerson")]
+        [Describe("Vyzvedne někdo jiný", message: "AuthorizedPerson")]
         [Terms("AuthorizedPerson")]
         AuthorizedPerson,
-        [Describe("Zaslat na adresu TB", message: "SendHome")]
+        [Describe("Zaslat na adresu", message: "SendHome")]
         [Terms("SendHome")]
         SendHome
     }
@@ -23,7 +23,7 @@ namespace VolebniPrukaz.DialogModels
     [Serializable]
     public class VotePerson
     {
-        [Describe("způsob převzetí")]
+        [Describe("Jak Vám bude doručení voličského průkazu nejlépe vyhovovat.")]
         public VotePersonType? Type { get; set; }
     }
 }

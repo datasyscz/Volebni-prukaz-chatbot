@@ -127,7 +127,6 @@
     <Compile Include="DialogModels\VotePerson.cs" />
     <Compile Include="Dialogs\AddressDialog.cs" />
     <Compile Include="Dialogs\ConfirmDialog.cs" />
-    <Compile Include="Dialogs\PersonalDataDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="FileModels\VoterPassFM.cs" />
     <Compile Include="Forms\AddressForm.cs" />

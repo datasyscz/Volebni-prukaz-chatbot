@@ -32,7 +32,7 @@ namespace VolebniPrukaz.Dialogs
             string confirmText = "Je tato adresa správně?",
             string addressNotFoundText = "Bohužel jsem tuto adresu nenašel. Je opravdu správně?",
             string questionAgainText = "Tak nám prosím napište správnou adresu. Nebo ji zkuste napsat podrobněji.",
-            string dontUnderstoodText = "Bohužel nerozumím. Ano, nebo ne?",
+            string dontUnderstoodText = "Tak tomu nerozumím. Ano nebo ne? 😦",
             string addressNotFoundByGoogleText = "S touto adresou si bohužel nevím rady. Pojďmě si ji projít postupně."
             )
         {
@@ -69,11 +69,11 @@ namespace VolebniPrukaz.Dialogs
 
                     _recognizedAddress = firstResultAddress.MapGeocodeToAddressDM();
                     string addressString = _recognizedAddress.ToAddressString();
-                    var cardText = $"{_confirmText}\r\n{addressString}";
+                    var cardText = $"{_confirmText}\r\n_{addressString}_";
 
                     if (replyToConversation.ChannelId == ChannelIds.Facebook)
                     {
-                        var mapImageDataResult = await _mapApiClient.GetMapImageData(addressString, zoom: 17);
+                        var mapImageDataResult = await _mapApiClient.GetMapImageData(addressActivity.Text, zoom: 17);
                         var mapMessage = context.MakeMessage();
                         mapMessage.Attachments.Add(new Attachment { ContentUrl = (string)mapImageDataResult.Data, ContentType = "image/png" });
                         await context.PostAsync(mapMessage);
@@ -104,7 +104,7 @@ namespace VolebniPrukaz.Dialogs
                 }
                 else
                 {
-                    await context.SayAsync(_questionText);
+                    await context.SayAsync(_addressNotFoundByGoogleText);
                     var hotelsFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm, FormOptions.PromptInStart);
                     context.Call(hotelsFormDialog, SetAddressFormToDM);
                 }
@@ -164,20 +164,26 @@ namespace VolebniPrukaz.Dialogs
 
         private async Task ConfirmRecognition(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            var yesMatches = Microsoft.Bot.Builder.Resource.Resources.MatchYes.Split(';');
+            var yesMatches = Microsoft.Bot.Builder.Resource.Resources.MatchYes.Split(';').ToList();
+            yesMatches.Add("jj");
+            yesMatches.Add("je");
+            yesMatches.Add("povrzuji");
+            yesMatches.Add("jasně");
+
             var activity = await result;
             var text = activity.Text;
 
             foreach (var item in yesMatches)
             {
-                if (item.ToLower().Equals(text.ToLower()))
+                if (item.ToLower().Contains(text.ToLower()))
                 {
                     context.Done(_recognizedAddress);
                     return;
                 }
             }
 
-            var noMatches = Microsoft.Bot.Builder.Resource.Resources.MatchNo.Split(';');
+            var noMatches = Microsoft.Bot.Builder.Resource.Resources.MatchNo.Split(';').ToList();
+            noMatches.Add("není");
 
             foreach (var item in noMatches)
             {
@@ -189,7 +195,7 @@ namespace VolebniPrukaz.Dialogs
                 }
             }
 
-            await context.PostAsync("Bohužel nerozumím. Ano, nebo ne?");
+            await context.PostAsync(_dontUnderstoodText);
             context.Wait(ConfirmRecognition);
         }
     }

@@ -14,7 +14,7 @@ namespace VolebniPrukaz.Forms
         {
             return new FormBuilder<AddressDM>()
                 .Field(nameof(AddressDM.City),
-                    prompt: "Zadejte prosím obec.",
+                    prompt: "Jaké je jméno města či obce, kde máte trvalé bydliště?",
                     validate: async (state, response) => {
                         ValidateResult result = new ValidateResult
                         {
@@ -24,7 +24,7 @@ namespace VolebniPrukaz.Forms
                         return result;
                     })
                 .Field(nameof(AddressDM.Zip),
-                    prompt: "Zadejte prosím PSČ.",
+                    prompt: "Jaké je k Vám směrovací číslo?",
                     validate: async (state, response) =>
                     {
                         string zipStr = (string) response;
@@ -48,7 +48,7 @@ namespace VolebniPrukaz.Forms
                         }
                     })
                 .Field(nameof(AddressDM.Street),
-                    prompt: "Zadejte prosím ulici (bez čísla domu).",
+                    prompt: "Teď prosím jméno Vaší ulice (bez čísla popisného).",
                     validate: async (state, response) => {
                         string adress = (string)response;
                         if (adress.Length >= 2)
@@ -65,12 +65,12 @@ namespace VolebniPrukaz.Forms
                             {
                                 IsValid = false,
                                 Value = response,
-                                Feedback = "Takovou ulici neznam. Asi mě zkoušíte že?"
+                                Feedback = "O téhle ulici jsem ještě neslyšel. Asi mě zkoušíte, že?"
                             };
                         }
                     })
                 .Field(nameof(AddressDM.HouseNumber),
-                    prompt: "Zadejte prosím číslo domu.",
+                    prompt: "Výborně. Nyní napište číslo Vašeho domu.",
                     validate: async (state, response) => {
                         ValidateResult result = new ValidateResult
                         {

@@ -31,7 +31,7 @@ namespace VolebniPrukaz.Dialogs
 
         public static IDialog<object> StartWithHelloChain()
         {
-            return Chain.Return("Ahoj, jsem Volební Průkaz bot a rád Vám pomůžu s vydáním volebního průkazu.")
+            return Chain.Return("Zdravím Vás! Já jsem chatovací robot. Možná takové jako jsem já ještě neznáte. Nebojte, nejsem sice žijící tvor, stejně se ale domluvíme. 👍")
                 .PostToUser()
                 .ContinueWith(async (ctx, res) =>
                 {
@@ -49,7 +49,7 @@ namespace VolebniPrukaz.Dialogs
         {
             context.ConversationData.SetValue(ConversationDataProperties.MainChainFirstPass.ToString(), isFirstPass);
 
-            return Chain.Return("Pojďme na to.")
+            return Chain.Return("Pojďme na to! Jsem tu od toho, abych Vám pomohl získat Váš voličský průkaz. Položím Vám proto několik otázek.")
                  .PostToUser()
                  .ContinueWith(async (ctx, res) =>
                  {
@@ -88,7 +88,10 @@ namespace VolebniPrukaz.Dialogs
                 {
                     var personalData = await res;
                     ctx.ConversationData.SetValue(ConversationDataProperties.PersonalData.ToString(), personalData);
-                    return new AddressDialog("Napište mi prosím adresu Vašeho trvalého bydliště..");
+                    return new AddressDialog("Výborně. V tuto chvíli potřebuji ještě adresu Vašeho trvalého bydliště.", 
+                        confirmText: "Děkuji, tam jsem ještě nebyl! 👀 Je tato adresa podle mapy správně?",
+                        questionAgainText: "Aha. Někde se tedy stala chyba. Je z Vaší strany adresa napsána skutečně správně? Zkuste to prosím ještě jednou jinak, podrobněji.",
+                        addressNotFoundByGoogleText: "Tomu bohužel nerozumím. Pojďme tedy Vaši adresu rozebrat postupně.");
                 })
                 .ContinueWith<AddressDM, object>(async (ctx, res) =>
                 {
@@ -110,7 +113,7 @@ namespace VolebniPrukaz.Dialogs
                     }
 
                     var replyMessage = ctx.MakeMessage();
-                    replyMessage.Text = "Zde si můžete stáhnout";
+                    replyMessage.Text = "Tak hotovo! 👌 Žádost o Váš voličský průkaz je tu.";
 
                     if (replyMessage.ChannelId == ChannelIds.Facebook)
                     {
@@ -120,7 +123,7 @@ namespace VolebniPrukaz.Dialogs
                         {
                             Type = "openUrl",
                             Value = voterPassServiceUri.ToString(),
-                            Title = "Žádost o volební průkaz"
+                            Title = "Stáhnout žádost"
                         });
 
                         if (voterPerson.Type == VotePersonType.AuthorizedPerson)
@@ -129,7 +132,7 @@ namespace VolebniPrukaz.Dialogs
                             {
                                 Type = "openUrl",
                                 Value = warrantServiceUri.ToString(),
-                                Title = "Plnou moc"
+                                Title = "Stáhnout plnou moc"
                             });
                         }
 
@@ -164,20 +167,30 @@ namespace VolebniPrukaz.Dialogs
 
                     return Chain.Return(string.Empty);
                 })
+                .ContinueWith<object, object>(async (ctx, res) =>
+                {
+                    await res;
+                    return new ConfirmDialog("Bylo mi velkým potěšením.",
+                        "Více informací",
+                        "Tomu bohužel nerozumím :(",
+                        possibleAnswers: new[] { "pokračovat", "informace" });
+                })
                 .ContinueWith(async (ctx, res) => {
                     await res;
 
-                    return Chain.Return("Žádost o volební průkaz můžete zaslat poštou, nebo pomocí datové schránky.")
-                    .PostToUser();
+                    return Chain.Return("Já a moji druzi se snažíme zjednodušovat Váš styk s úřady. Víte, že už nyní jde s úřady komunikovat datovou schránkou? " +
+                        "Díky ní už nemusíte na úřady fyzicky chodit, spousta formulářů se dá odeslat pomocí portálu https://podejto.cz/. " +
+                        "Mrkněte na to, Váš čas je přeci drahý!")
+                        .PostToUser();
                 })
                 .ContinueWith(async (ctx, res) =>
                 {
                     await Task.Run(() => Thread.Sleep(5000));
                     await res;
 
-                    return new ConfirmDialog("Přejete si pokračovat vytvořením nové žádosti?", 
+                    return new ConfirmDialog("Přejete si pokračovat vytvořením další žádosti?", 
                         "Pokračovat", 
-                        "Bohužel nerozumím", 
+                        "Tomu bohužel nerozumím :(", 
                         possibleAnswers: new[] { "ano", "jo", "pokračovat", "přeji", "přeju" })
                     .ContinueWith(async (ctx2, res2) =>
                     {
@@ -223,8 +236,8 @@ namespace VolebniPrukaz.Dialogs
             string baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Authority;
             string controllerPath = "/api/file";
 
-            string query = $"?name={personalData.Name}";
-            query += $"&birthDate={personalData.BirthDate}";
+            string query = $"?name={Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(personalData.Name.ToLower())}";
+            query += $"&birthDate={((DateTime)personalData.BirthDateConverted).ToShortDateString()}";
             query += $"&phone={personalData.Phone}";
             query += $"&permanentAddress={address.ToAddressString()}";
             query += $"&officeName={office?.name ?? string.Empty}";

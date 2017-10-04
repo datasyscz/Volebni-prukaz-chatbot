@@ -16,6 +16,8 @@ namespace VolebniPrukaz.DialogModels
         public string Street { get; set; }
 
         public string HouseNumber { get; set; }
+
+        public string Country { get; set; }
     }
 
     public static class AddressHelpers
@@ -27,13 +29,14 @@ namespace VolebniPrukaz.DialogModels
                 City = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("locality") || a.types.Contains("sublocality"))?.short_name,
                 Street = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("route"))?.long_name,
                 HouseNumber = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("street_number"))?.long_name,
-                Zip = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("postal_code"))?.long_name?.Replace(" ", "")
+                Zip = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("postal_code"))?.long_name?.Replace(" ", ""),
+                Country = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("country"))?.long_name
             };
         }
 
         public static string ToAddressString(this AddressDM address)
         {
-            return $"{address.Street} {address.HouseNumber}, {address.Zip} {address.City}, Česká republika";
+            return $"{address.Street} {address.HouseNumber}, {address.Zip} {address.City}, {address.Country}";
         }
     }
 }
