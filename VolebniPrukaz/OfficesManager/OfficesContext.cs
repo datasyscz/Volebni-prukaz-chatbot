@@ -18,7 +18,7 @@ namespace VolebniPrukaz.OfficesManager
 
         private string _file { get; }
 
-        public List<Office> GetOffices(string zip)
+        public List<Office> GetOffices(string zip, string city)
         {
             using (var file = File.OpenText(_file))
             using (var reader = new JsonTextReader(file))
@@ -26,7 +26,7 @@ namespace VolebniPrukaz.OfficesManager
                 //replace space chats
                 zip = zip.Replace(" ", "");
                 var collection = JToken.ReadFrom(reader).ToObject<List<Office>>();
-                return collection.Where(a => a.zip == zip).ToList();
+                return collection.Where(a => a.zip == zip && a.city == city).ToList();
             }
         }
     }

@@ -94,7 +94,7 @@ namespace VolebniPrukaz.Dialogs
                     {
                         replyToConversation.AttachmentLayout = AttachmentLayoutTypes.List;
                         replyToConversation.Attachments = new List<Microsoft.Bot.Connector.Attachment>();
-                        var plAttachment = await GetAddressConfirmationAttachment(context, _recognizedAddress, cardText);
+                        var plAttachment = await GetAddressConfirmationAttachment(context, addressActivity.Text, cardText);
                         replyToConversation.Attachments.Add(plAttachment);
                     }
                     

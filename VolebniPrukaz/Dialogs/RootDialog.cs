@@ -97,7 +97,7 @@ namespace VolebniPrukaz.Dialogs
                 {
                     var addressDM = await res;
                     var office = new OfficesContext(HttpContext.Current.Server.MapPath("/offices.json"))
-                                        .GetOffices(addressDM.Zip).FirstOrDefault();
+                                        .GetOffices(addressDM.Zip, addressDM.City).FirstOrDefault();
 
                     var personalData = ctx.ConversationData.GetValue<PersonalDataDM>(ConversationDataProperties.PersonalData.ToString());
                     var voterPerson = ctx.ConversationData.GetValue<VotePerson>(ConversationDataProperties.VotePeson.ToString());
