@@ -24,7 +24,7 @@ namespace VolebniPrukaz.DialogModels
     {
         public static AddressDM MapGeocodeToAddressDM(this Result geocodeResult)
         {
-            return new AddressDM
+            var address = new AddressDM
             {
                 City = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("locality") || a.types.Contains("sublocality"))?.short_name,
                 Street = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("route"))?.long_name,
@@ -32,6 +32,14 @@ namespace VolebniPrukaz.DialogModels
                 Zip = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("postal_code"))?.long_name?.Replace(" ", ""),
                 Country = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("country"))?.long_name
             };
+
+            if (string.IsNullOrEmpty(address.Street))
+            {
+                address.Street = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("locality"))?.long_name;
+                address.HouseNumber = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("premise"))?.long_name;
+            }
+
+            return address;
         }
 
         public static string ToAddressString(this AddressDM address)

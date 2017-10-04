@@ -152,7 +152,7 @@ namespace VolebniPrukaz.Dialogs
 
         public async Task<Attachment> GetAddressConfirmationAttachment(IDialogContext context, AddressDM address, string cardText)
         {
-            var addressString = $"{address.Street} {address.HouseNumber}, {address.Zip} {address.City}, Česká republika";
+            var addressString = $"{address.Street} {address.HouseNumber}, {address.Zip} {address.City}, {address.Country}";
             return await GetAddressConfirmationAttachment(context, addressString, cardText);
         }
 
