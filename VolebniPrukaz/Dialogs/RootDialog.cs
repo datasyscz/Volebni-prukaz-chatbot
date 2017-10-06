@@ -23,10 +23,11 @@ namespace VolebniPrukaz.Dialogs
         protected enum ConversationDataProperties
         {
             PersonalData,
-            Address,
+            PermanentAddress,
             Office,
             VotePeson,
-            MainChainFirstPass
+            MainChainFirstPass,
+            ContactAddress
         }
 
         public static IDialog<object> StartWithHelloChain()
@@ -81,7 +82,25 @@ namespace VolebniPrukaz.Dialogs
                  })
                 .ContinueWith(async (ctx, res) =>
                 {
-                    ctx.ConversationData.SetValue(ConversationDataProperties.VotePeson.ToString(), await res);
+                    var result = await res;
+                    ctx.ConversationData.SetValue(ConversationDataProperties.VotePeson.ToString(), result);
+
+                    if (result.Type == VotePersonType.SendToDifferentAddress)
+                    {
+                        return new AddressDialog("Napište mi prosím adresu, na kterou chcete voličský průkaz zaslat.",
+                                        confirmText: "Děkuji, tam jsem ještě nebyl! 👀 Je tato adresa podle mapy správně?",
+                                        questionAgainText: "Aha. Někde se tedy stala chyba. Je z Vaší strany adresa napsána skutečně správně? Zkuste to prosím ještě jednou jinak, podrobněji.",
+                                        addressNotFoundByGoogleText: "Tomu bohužel nerozumím. Pojďme tedy Vaši adresu rozebrat postupně.");
+                    }
+                    else return Chain.Return<AddressDM>(null);
+                })
+                .ContinueWith(async (ctx, res) =>
+                {
+                    var contactAddress = await res;
+
+                    if (contactAddress != null)
+                        ctx.ConversationData.SetValue(ConversationDataProperties.ContactAddress.ToString(), contactAddress);
+
                     return Chain.From(() => FormDialog.FromForm(() => PersonalDataForm.GetPersonalDataForm(), FormOptions.PromptInStart));
                 })
                 .ContinueWith<PersonalDataDM, AddressDM>(async (ctx, res) =>
@@ -102,7 +121,9 @@ namespace VolebniPrukaz.Dialogs
                     var personalData = ctx.ConversationData.GetValue<PersonalDataDM>(ConversationDataProperties.PersonalData.ToString());
                     var voterPerson = ctx.ConversationData.GetValue<VotePerson>(ConversationDataProperties.VotePeson.ToString());
 
-                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office, voterPerson);
+                    ctx.ConversationData.TryGetValue(ConversationDataProperties.ContactAddress.ToString(), out AddressDM contactAddress);
+
+                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office, voterPerson, contactAddress);
                     var warrantServiceUri = GetWarrantPassUri();
 
                     if (office == null)
@@ -180,7 +201,7 @@ namespace VolebniPrukaz.Dialogs
 
                     return Chain.Return("Já a moji druzi se snažíme zjednodušovat Váš styk s úřady. Víte, že už nyní jde s úřady komunikovat datovou schránkou? " +
                         "Díky ní už nemusíte na úřady fyzicky chodit, spousta formulářů se dá odeslat pomocí portálu https://podejto.cz/. " +
-                        "Mrkněte na to, Váš čas je přeci drahý!")
+                        "Mrkněte na to, Váš čas je přeci drahý! Vyvinuto s podporou Hlídače Státu.")
                         .PostToUser();
                 })
                 .ContinueWith(async (ctx, res) =>
@@ -188,7 +209,7 @@ namespace VolebniPrukaz.Dialogs
                     await Task.Run(() => Thread.Sleep(5000));
                     await res;
 
-                    return new ConfirmDialog("Přejete si pokračovat vytvořením další žádosti?", 
+                    return new ConfirmDialog("Novou žádost o voličský průkaz společně vytvoříme po stisknutí tlačítka \"Pokračovat\"", 
                         "Pokračovat", 
                         "Tomu bohužel nerozumím :(", 
                         possibleAnswers: new[] { "ano", "jo", "pokračovat", "přeji", "přeju" })
@@ -231,15 +252,18 @@ namespace VolebniPrukaz.Dialogs
             return msg;
         }
 
-        private static Uri GetVoterPassUri(AddressDM address, PersonalDataDM personalData, Office office, VotePerson votePerson)
+        private static Uri GetVoterPassUri(AddressDM permanentAddress, PersonalDataDM personalData, Office office, VotePerson votePerson, AddressDM contactAddress)
         {
             string baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Authority;
             string controllerPath = "/api/file";
 
+            var contactAddressString = contactAddress == null ? string.Empty : contactAddress.ToAddressString();
+
             string query = $"?name={Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(personalData.Name.ToLower())}";
             query += $"&birthDate={((DateTime)personalData.BirthDateConverted).ToShortDateString()}";
             query += $"&phone={personalData.Phone}";
-            query += $"&permanentAddress={address.ToAddressString()}";
+            query += $"&permanentAddress={permanentAddress.ToAddressString()}";
+            query += $"&contactAddress={contactAddressString}";
             query += $"&officeName={office?.name ?? string.Empty}";
             query += $"&officeAddress={office?.address ?? string.Empty}";
             query += $"&officePostalCode={office?.zip ?? string.Empty}";

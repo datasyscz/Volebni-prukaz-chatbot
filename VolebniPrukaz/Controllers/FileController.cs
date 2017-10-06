@@ -16,7 +16,7 @@ namespace VolebniPrukaz.Controllers
     public class FileController : ApiController
     {
         [HttpGet]
-        public HttpResponseMessage VoterPass(string name, string birthDate, string permanentAddress, string phone, string officeName, string officeAddress, string officePostalCode, string officeCity, VotePersonType voterPersonType)
+        public HttpResponseMessage VoterPass(string name, string birthDate, string permanentAddress, string contactAddress, string phone, string officeName, string officeAddress, string officePostalCode, string officeCity, VotePersonType voterPersonType)
         {
             var stream = new MemoryStream();
 
@@ -41,11 +41,6 @@ namespace VolebniPrukaz.Controllers
                 doc.ReplaceText("%MESTO%", string.Empty);
             }
 
-            if (voterPersonType == VotePersonType.Personaly)
-                doc.ReplaceText("%VOTERTYPE1%", "x");
-            else
-                doc.ReplaceText("%VOTERTYPE1%", "");
-
             if (voterPersonType == VotePersonType.AuthorizedPerson)
                 doc.ReplaceText("%VOTERTYPE2%", "x");
             else
@@ -55,6 +50,20 @@ namespace VolebniPrukaz.Controllers
                 doc.ReplaceText("%VOTERTYPE3%", "x");
             else
                 doc.ReplaceText("%VOTERTYPE3%", "");
+
+            if (voterPersonType == VotePersonType.SendToDifferentAddress)
+            {
+                doc.ReplaceText("%VOTERTYPE4%", "x");
+                doc.ReplaceText("%KONTAKTNIADRESA%", contactAddress);
+            } 
+            else
+            {
+                doc.ReplaceText("%VOTERTYPE4%", "");
+                doc.ReplaceText("%KONTAKTNIADRESA%", "…………………….…………………….…………………….");
+            }
+                
+
+            
 
             doc.SaveAs(stream);
 

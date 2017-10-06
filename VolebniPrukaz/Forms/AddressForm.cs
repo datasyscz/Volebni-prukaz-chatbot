@@ -14,7 +14,7 @@ namespace VolebniPrukaz.Forms
         {
             return new FormBuilder<AddressDM>()
                 .Field(nameof(AddressDM.City),
-                    prompt: "Jaké je jméno města či obce, kde máte trvalé bydliště?",
+                    prompt: "Jaké je jméno města?",
                     validate: async (state, response) => {
                         ValidateResult result = new ValidateResult
                         {
@@ -24,7 +24,7 @@ namespace VolebniPrukaz.Forms
                         return result;
                     })
                 .Field(nameof(AddressDM.Zip),
-                    prompt: "Jaké je k Vám směrovací číslo?",
+                    prompt: "Jaké je směrovací číslo?",
                     validate: async (state, response) =>
                     {
                         string zipStr = (string) response;
@@ -48,7 +48,7 @@ namespace VolebniPrukaz.Forms
                         }
                     })
                 .Field(nameof(AddressDM.Street),
-                    prompt: "Teď prosím jméno Vaší ulice (bez čísla popisného).",
+                    prompt: "Teď prosím jméno ulice (bez čísla popisného).",
                     validate: async (state, response) => {
                         string adress = (string)response;
                         if (adress.Length >= 2)
@@ -70,7 +70,7 @@ namespace VolebniPrukaz.Forms
                         }
                     })
                 .Field(nameof(AddressDM.HouseNumber),
-                    prompt: "Výborně. Nyní napište číslo Vašeho domu.",
+                    prompt: "Výborně. Nyní napište číslo domu.",
                     validate: async (state, response) => {
                         ValidateResult result = new ValidateResult
                         {

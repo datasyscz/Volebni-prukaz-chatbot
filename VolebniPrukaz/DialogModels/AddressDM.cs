@@ -39,6 +39,9 @@ namespace VolebniPrukaz.DialogModels
                 address.HouseNumber = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("premise"))?.long_name;
             }
 
+            if (string.IsNullOrEmpty(address.HouseNumber))
+                address.HouseNumber = geocodeResult.address_components.FirstOrDefault(a => a.types.Contains("premise"))?.long_name;
+
             return address;
         }
 

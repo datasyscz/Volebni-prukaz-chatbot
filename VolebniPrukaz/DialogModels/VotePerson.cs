@@ -9,15 +9,15 @@ namespace VolebniPrukaz.DialogModels
 {
     public enum VotePersonType
     {
-        [Describe("Vyzvednu osobně", message: "Personaly")]
-        [Terms("Personaly")]
-        Personaly,
         [Describe("Vyzvedne někdo jiný", message: "AuthorizedPerson")]
         [Terms("AuthorizedPerson")]
         AuthorizedPerson,
-        [Describe("Zaslat na adresu", message: "SendHome")]
+        [Describe("Zaslat domů", message: "SendHome")]
         [Terms("SendHome")]
-        SendHome
+        SendHome,
+        [Describe("Zaslat jinam", message: "SendOnDifferentAddress")]
+        [Terms("SendOnDifferentAddress")]
+        SendToDifferentAddress
     }
 
     [Serializable]

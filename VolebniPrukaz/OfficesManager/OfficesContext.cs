@@ -26,7 +26,7 @@ namespace VolebniPrukaz.OfficesManager
                 //replace space chats
                 zip = zip.Replace(" ", "");
                 var collection = JToken.ReadFrom(reader).ToObject<List<Office>>();
-                return collection.Where(a => a.zip == zip && a.city == city).ToList();
+                return collection.Where(a => a.zip == zip).OrderByDescending(b => b.city == city).ToList();
             }
         }
     }
