@@ -32,13 +32,23 @@ namespace VolebniPrukaz.Dialogs
 
         public static IDialog<object> StartWithHelloChain()
         {
-            return Chain.Return("Zdravím Vás! Já jsem chatovací robot. Možná takové jako jsem já ještě neznáte. Nebojte, nejsem sice žijící tvor, stejně se ale domluvíme. 👍")
+            //return Chain.Return("Zdravím Vás! Já jsem chatovací robot. Možná takové jako jsem já ještě neznáte. Nebojte, nejsem sice žijící tvor, stejně se ale domluvíme. 👍")
+            //    .PostToUser()
+            //    .ContinueWith(async (ctx, res) =>
+            //    {
+            //        await res;
+            //        return MainChain(ctx);
+            //    });
+
+            return Chain.Return("Dobrý den! Byl jsem zde proto, abych Vám dopomohl volit mimo trvalé bydliště. Žádost o tuto možnost se ovšem musela na příslušné úřady doručit nejpozději 7 dní před začátkem voleb, tedy 13. října. Je mi to líto, ale už Vám bohužel nemůžu pomoci. Zkuste i přesto k volbám dorazit, Váš volební hlas za to stojí!")
                 .PostToUser()
                 .ContinueWith(async (ctx, res) =>
                 {
                     await res;
-                    return MainChain(ctx);
-                });
+                    return Chain.Return("Volebního chatbota pro Vás s pomoci [Hlídače státu](https://www.hlidacstatu.cz/) vyvinula společnost [Datasys](https://datasys.cz).").PostToUser();
+                })
+                .WaitToBot()
+                .WaitToBot();
         }
 
         public static IDialog<object> StartOverChain(IBotContext ctx)
