@@ -105,7 +105,7 @@ namespace VolebniPrukaz.Dialogs
                 else
                 {
                     await context.SayAsync(_addressNotFoundByGoogleText);
-                    var addsessFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm);
+                    var addessFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm);
                     context.Call(addsessFormDialog, SetAddressFormToDM);
                 }
             }
