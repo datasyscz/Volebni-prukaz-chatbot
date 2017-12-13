@@ -105,8 +105,8 @@ namespace VolebniPrukaz.Dialogs
                 else
                 {
                     await context.SayAsync(_addressNotFoundByGoogleText);
-                    var hotelsFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm, FormOptions.PromptInStart);
-                    context.Call(hotelsFormDialog, SetAddressFormToDM);
+                    var addsessFormDialog = FormDialog.FromForm(AddressForm.BuildAddressForm);
+                    context.Call(addsessFormDialog, SetAddressFormToDM);
                 }
             }
             catch (Exception ex)
