@@ -16,11 +16,23 @@ namespace VolebniPrukaz.Controllers
     public class FileController : ApiController
     {
         [HttpGet]
-        public HttpResponseMessage VoterPass(string name, string birthDate, string permanentAddress, string contactAddress, string phone, string officeName, string officeAddress, string officePostalCode, string officeCity, VotePersonType voterPersonType)
+        public HttpResponseMessage VoterPass(
+            string name, 
+            string birthDate, 
+            string permanentAddress, 
+            string contactAddress, 
+            string phone, 
+            string officeName, 
+            string officeAddress, 
+            string officePostalCode, 
+            string officeCity, 
+            VotePersonType voterPersonType, 
+            VoteRoundType voteRoundType
+            )
         {
             var stream = new MemoryStream();
 
-            var doc = DocX.Load(System.Web.HttpContext.Current.Server.MapPath("/vzor-zadosti-o-vp.docx"));
+            var doc = DocX.Load(System.Web.HttpContext.Current.Server.MapPath("/vzor-zadosti-o-vp-prezident.docx"));
             doc.ReplaceText("%JMENO%", name);
             doc.ReplaceText("%NAROZENI%", birthDate);
             doc.ReplaceText("%TRVALAADRESA%", permanentAddress);
@@ -61,9 +73,19 @@ namespace VolebniPrukaz.Controllers
                 doc.ReplaceText("%VOTERTYPE4%", "");
                 doc.ReplaceText("%KONTAKTNIADRESA%", "…………………….…………………….…………………….");
             }
-                
 
-            
+            if (voteRoundType == VoteRoundType.AllRounds)
+            {
+                doc.ReplaceText("%DATUMVOLBY%", "pro první kolo 12. a 13. ledna 2018 a pro druhé kolo 26. a 27. ledna 2018");
+            }
+            else if (voteRoundType == VoteRoundType.FirstRound)
+            {
+                doc.ReplaceText("%DATUMVOLBY%", "pro první kolo 12. a 13. ledna 2018");
+            }
+            else if (voteRoundType == VoteRoundType.SecondRound)
+            {
+                doc.ReplaceText("%DATUMVOLBY%", "pro druhé kolo 26. a 27. ledna 2018");
+            }
 
             doc.SaveAs(stream);
 
@@ -74,7 +96,7 @@ namespace VolebniPrukaz.Controllers
             result.Content.Headers.ContentDisposition =
                 new ContentDispositionHeaderValue("attachment")
                 {
-                    FileName = "zadost-o-vp.docx"
+                    FileName = "zadost-o-vp-prezident.docx"
                 };
             result.Content.Headers.ContentType =
                 new MediaTypeHeaderValue("application/octet-stream");
@@ -87,7 +109,7 @@ namespace VolebniPrukaz.Controllers
         {
             var stream = new MemoryStream();
 
-            var doc = DocX.Load(System.Web.HttpContext.Current.Server.MapPath("/plna-moc-volby-2017.docx"));
+            var doc = DocX.Load(System.Web.HttpContext.Current.Server.MapPath("/plna-moc-volba-prezidenta-2018.docx"));
             doc.SaveAs(stream);
 
             var result = new HttpResponseMessage(HttpStatusCode.OK)
@@ -97,7 +119,7 @@ namespace VolebniPrukaz.Controllers
             result.Content.Headers.ContentDisposition =
                 new ContentDispositionHeaderValue("attachment")
                 {
-                    FileName = "plna-moc-volby-2017.docx"
+                    FileName = "plna-moc-volba-prezidenta-2018.docx"
                 };
             result.Content.Headers.ContentType =
                 new MediaTypeHeaderValue("application/octet-stream");

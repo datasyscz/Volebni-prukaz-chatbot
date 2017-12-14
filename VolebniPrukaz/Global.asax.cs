@@ -1,5 +1,7 @@
 ﻿using System.Web;
 using System.Web.Http;
+using VolebniPrukaz.Dialogs;
+using VolebniPrukaz.Scorables;
 
 namespace VolebniPrukaz
 {
@@ -7,6 +9,9 @@ namespace VolebniPrukaz
     {
         protected void Application_Start()
         {
+            //Add restart conversation function
+            GlobalMessageHandlersBotModule.RegisterModule(RootDialog.StartWithHelloChain());
+
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }

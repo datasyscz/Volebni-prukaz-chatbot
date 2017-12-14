@@ -137,6 +137,7 @@
     <Compile Include="DialogModels\AddressDM.cs" />
     <Compile Include="DialogModels\PersonalDataDM.cs" />
     <Compile Include="DialogModels\VotePerson.cs" />
+    <Compile Include="DialogModels\VoteRound.cs" />
     <Compile Include="Dialogs\AddressDialog.cs" />
     <Compile Include="Dialogs\ConfirmDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
@@ -151,6 +152,8 @@
     <Compile Include="OfficesManager\Office.cs" />
     <Compile Include="OfficesManager\OfficesContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scorables\GlobalMessageHandlersBotModule.cs" />
+    <Compile Include="Scorables\ResetConversationScorable.cs" />
     <Compile Include="TemplateDocument\ReplaceTag.cs" />
     <Compile Include="TemplateDocument\TemplateDocumen.cs" />
   </ItemGroup>
@@ -160,9 +163,11 @@
     </Content>
     <Content Include="offices.json" />
     <Content Include="plna-moc-volby-2017.docx" />
+    <Content Include="plna-moc-volba-prezidenta-2018.docx" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\VolebniPrukaz - Web Deploy.pubxml" />
     <Content Include="vzor-zadosti-o-vp.docx" />
+    <Content Include="vzor-zadosti-o-vp-prezident.docx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

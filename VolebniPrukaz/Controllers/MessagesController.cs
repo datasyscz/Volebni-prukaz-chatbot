@@ -32,8 +32,8 @@ namespace VolebniPrukaz
             if (activity.Type == ActivityTypes.Message)
             {
                 //Reset conversation on facebook start
-                //if(activity.Text == "STARTED_CON")
-                //    activity.GetStateClient().BotState.DeleteStateForUser(activity.ChannelId, activity.From.Id);
+                if (activity.Text == "STARTED_CON")
+                    activity.GetStateClient().BotState.DeleteStateForUser(activity.ChannelId, activity.From.Id);
 
                 await Conversation.SendAsync(activity, () => RootDialog.StartWithHelloChain());
             }

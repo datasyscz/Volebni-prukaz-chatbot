@@ -26,29 +26,30 @@ namespace VolebniPrukaz.Dialogs
             PermanentAddress,
             Office,
             VotePeson,
+            VoteRound,
             MainChainFirstPass,
             ContactAddress
         }
 
         public static IDialog<object> StartWithHelloChain()
         {
-            //return Chain.Return("Zdravím Vás! Já jsem chatovací robot. Možná takové jako jsem já ještě neznáte. Nebojte, nejsem sice žijící tvor, stejně se ale domluvíme. 👍")
-            //    .PostToUser()
-            //    .ContinueWith(async (ctx, res) =>
-            //    {
-            //        await res;
-            //        return MainChain(ctx);
-            //    });
-
-            return Chain.Return("Dobrý den! Byl jsem zde proto, abych Vám dopomohl volit mimo trvalé bydliště. Žádost o tuto možnost se ovšem musela na příslušné úřady doručit nejpozději 7 dní před začátkem voleb, tedy 13. října. Je mi to líto, ale už Vám bohužel nemůžu pomoci. Zkuste i přesto k volbám dorazit, Váš volební hlas za to stojí!")
+            return Chain.Return("Zdravím Vás! Já jsem chatovací robot. Možná takové jako jsem já ještě neznáte. Nebojte, nejsem sice žijící tvor, stejně se ale domluvíme. 👍")
                 .PostToUser()
                 .ContinueWith(async (ctx, res) =>
                 {
                     await res;
-                    return Chain.Return("Volebního chatbota pro Vás s pomoci [Hlídače státu](https://www.hlidacstatu.cz/) vyvinula společnost [Datasys](https://datasys.cz).").PostToUser();
-                })
-                .WaitToBot()
-                .WaitToBot();
+                    return MainChain(ctx);
+                });
+
+            //return Chain.Return("Dobrý den! Byl jsem zde proto, abych Vám dopomohl volit mimo trvalé bydliště. Žádost o tuto možnost se ovšem musela na příslušné úřady doručit nejpozději 7 dní před začátkem voleb, tedy 13. října. Je mi to líto, ale už Vám bohužel nemůžu pomoci. Zkuste i přesto k volbám dorazit, Váš volební hlas za to stojí!")
+            //    .PostToUser()
+            //    .ContinueWith(async (ctx, res) =>
+            //    {
+            //        await res;
+            //        return Chain.Return("Volebního chatbota pro Vás s pomoci [Hlídače státu](https://www.hlidacstatu.cz/) vyvinula společnost [Datasys](https://datasys.cz).").PostToUser();
+            //    })
+            //    .WaitToBot()
+            //    .WaitToBot();
         }
 
         public static IDialog<object> StartOverChain(IBotContext ctx)
@@ -64,7 +65,7 @@ namespace VolebniPrukaz.Dialogs
                  .PostToUser()
                  .ContinueWith(async (ctx, res) =>
                  {
-                     await res;
+                     var result = await res;
                      var isFirstPassData = ctx.ConversationData.GetValue<bool>(ConversationDataProperties.MainChainFirstPass.ToString());
 
                      if (isFirstPassData)
@@ -72,7 +73,7 @@ namespace VolebniPrukaz.Dialogs
                          return Chain.From(() =>
                             FormDialog.FromForm(() =>
                             {
-                                return new FormBuilder<VotePerson>()
+                                return new FormBuilder<VoteRound>()
                                 .AddRemainingFields()
                                 .Confirm("", state => false)
                                 .Build();
@@ -83,12 +84,26 @@ namespace VolebniPrukaz.Dialogs
                          return Chain.From(() =>
                             FormDialog.FromForm(() =>
                             {
-                                return new FormBuilder<VotePerson>()
+                                return new FormBuilder<VoteRound>()
                                 .AddRemainingFields()
                                 .Confirm("", state => false)
                                 .Build();
                             }, FormOptions.PromptInStart));
                      }
+                 })
+                 .ContinueWith(async (ctx, res) =>
+                 {
+                     var result = await res;
+                     ctx.ConversationData.SetValue(ConversationDataProperties.VoteRound.ToString(), result);
+
+                     return Chain.From(() =>
+                            FormDialog.FromForm(() =>
+                            {
+                                return new FormBuilder<VotePerson>()
+                                .AddRemainingFields()
+                                .Confirm("", state => false)
+                                .Build();
+                            }, FormOptions.PromptInStart));
                  })
                 .ContinueWith(async (ctx, res) =>
                 {
@@ -130,10 +145,11 @@ namespace VolebniPrukaz.Dialogs
 
                     var personalData = ctx.ConversationData.GetValue<PersonalDataDM>(ConversationDataProperties.PersonalData.ToString());
                     var voterPerson = ctx.ConversationData.GetValue<VotePerson>(ConversationDataProperties.VotePeson.ToString());
+                    var voterRound = ctx.ConversationData.GetValue<VoteRound>(ConversationDataProperties.VoteRound.ToString());
 
                     ctx.ConversationData.TryGetValue(ConversationDataProperties.ContactAddress.ToString(), out AddressDM contactAddress);
 
-                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office, voterPerson, contactAddress);
+                    var voterPassServiceUri = GetVoterPassUri(addressDM, personalData, office, voterPerson, contactAddress, voterRound);
                     var warrantServiceUri = GetWarrantPassUri();
 
                     if (office == null)
@@ -262,7 +278,7 @@ namespace VolebniPrukaz.Dialogs
             return msg;
         }
 
-        private static Uri GetVoterPassUri(AddressDM permanentAddress, PersonalDataDM personalData, Office office, VotePerson votePerson, AddressDM contactAddress)
+        private static Uri GetVoterPassUri(AddressDM permanentAddress, PersonalDataDM personalData, Office office, VotePerson votePerson, AddressDM contactAddress, VoteRound voteRound)
         {
             string baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Authority;
             string controllerPath = "/api/file";
@@ -279,6 +295,7 @@ namespace VolebniPrukaz.Dialogs
             query += $"&officePostalCode={office?.zip ?? string.Empty}";
             query += $"&officeCity={office?.city ?? string.Empty}";
             query += $"&voterPersonType={votePerson.Type}";
+            query += $"&voteRoundType={voteRound.Type}";
 
             return new Uri(baseUrl + controllerPath + query);
         }
