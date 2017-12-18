@@ -9,21 +9,22 @@ namespace VolebniPrukaz.DialogModels
 {
     public enum VotePersonType
     {
-        [Describe("Vyzvedne někdo jiný", message: "AuthorizedPerson")]
-        [Terms("AuthorizedPerson")]
-        AuthorizedPerson,
         [Describe("Zaslat domů", message: "SendHome")]
         [Terms("SendHome")]
         SendHome,
         [Describe("Zaslat jinam", message: "SendOnDifferentAddress")]
         [Terms("SendOnDifferentAddress")]
-        SendToDifferentAddress
+        SendToDifferentAddress,
+        [Describe("Někdo jej vyzvedne", message: "AuthorizedPerson")]
+        [Terms("AuthorizedPerson")]
+        AuthorizedPerson
     }
 
     [Serializable]
     public class VotePerson
     {
-        [Describe("Jak Vám bude doručení voličského průkazu nejlépe vyhovovat.")]
+        [Prompt("Jakým způsobem k Vám má být voličský průkaz doručen? {||}")]
+        [Template(TemplateUsage.NotUnderstood, "\"{0}\" není platbou volbou. Jak Vám tedy bude doručení voličského průkazu nejlépe vyhovovat?")]
         public VotePersonType? Type { get; set; }
     }
 }

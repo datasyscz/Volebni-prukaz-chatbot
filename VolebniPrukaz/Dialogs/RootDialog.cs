@@ -12,7 +12,6 @@ using System.Web;
 using System.Web.Hosting;
 using VolebniPrukaz.OfficesManager;
 using System.Linq;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading;
 

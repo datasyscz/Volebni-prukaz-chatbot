@@ -22,7 +22,7 @@ namespace VolebniPrukaz.DialogModels
     [Serializable]
     public class VoteRound
     {
-        [Describe("Na která kola volby chcete průkaz?")]
+        [Prompt("Na která kola volby průkaz chcete? {||}")]
         public VoteRoundType? Type { get; set; }
     }
 }

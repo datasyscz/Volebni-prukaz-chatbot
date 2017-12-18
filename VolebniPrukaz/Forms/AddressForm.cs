@@ -43,7 +43,7 @@ namespace VolebniPrukaz.Forms
                             {
                                 IsValid = false,
                                 Value = response,
-                                Feedback = "Tak tomu nerozumím, potřebuji smerovací číslo, například ve formátu 130 00"
+                                Feedback = "Tomu fakt nerozumím. Potřebuji poštovní směrovací číslo, zkráceně PSČ. 😉 Bývá ve formátu 130 00."
                             };
                         }
                     })
