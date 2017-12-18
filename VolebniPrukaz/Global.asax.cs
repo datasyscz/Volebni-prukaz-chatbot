@@ -9,8 +9,7 @@ namespace VolebniPrukaz
     {
         protected void Application_Start()
         {
-            //Add restart conversation function
-            GlobalMessageHandlersBotModule.RegisterModule(RootDialog.StartWithHelloChain());
+            ScorableHandlers.RegisterModule(RootDialog.StartWithHelloChain());
 
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }

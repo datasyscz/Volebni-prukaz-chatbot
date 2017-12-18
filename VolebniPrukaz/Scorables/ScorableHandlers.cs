@@ -12,7 +12,7 @@ using System.Web;
 
 namespace VolebniPrukaz.Scorables
 {
-    public class GlobalMessageHandlersBotModule : Module
+    public class ScorableHandlers : Module
     {
         private readonly IDialog<object> _rootDialog;
         private readonly Func<IActivity, CancellationToken, string> _restartOn;
@@ -24,9 +24,14 @@ namespace VolebniPrukaz.Scorables
                 .Register(c => new ResetConversationScorable(c.Resolve<IDialogTask>(), _rootDialog, _restartOn))
                 .As<IScorable<IActivity, double>>()
                 .InstancePerLifetimeScope();
+
+            builder
+                .Register(c => new FAQScorable(c.Resolve<IDialogTask>()))
+                .As<IScorable<IActivity, double>>()
+                .InstancePerLifetimeScope();
         }
 
-        public GlobalMessageHandlersBotModule(IDialog<object> rootDialog, Func<IActivity, CancellationToken, string> restartOn)
+        public ScorableHandlers(IDialog<object> rootDialog, Func<IActivity, CancellationToken, string> restartOn)
         {
             _rootDialog = rootDialog;
             _restartOn = restartOn;
@@ -36,13 +41,13 @@ namespace VolebniPrukaz.Scorables
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule(new ReflectionSurrogateModule());
-            builder.RegisterModule(new GlobalMessageHandlersBotModule(rootDialog, restartOn));
+            builder.RegisterModule(new ScorableHandlers(rootDialog, restartOn));
             builder.Update(Conversation.Container);
         }
 
         public static void RegisterModule(IDialog<object> rootDialog)
         {
-            GlobalMessageHandlersBotModule.RegisterModule(
+            ScorableHandlers.RegisterModule(
                 rootDialog,
                 (activity, token) =>
                 {
@@ -50,7 +55,7 @@ namespace VolebniPrukaz.Scorables
 
                     if (msg != null && !string.IsNullOrEmpty(msg.Text))
                     {
-                        string[] matches = new[] { "GET_STARTED_PAYLOAD", "restart", "reset", "RESET_PAYLOAD" };
+                        string[] matches = new[] { "GET_STARTED_PAYLOAD", "STARTED_CON", "restart", "reset", "RESET_PAYLOAD" };
 
                         if (matches.Any(a => a.ToLower() == msg.Text.ToLower()))
                             return msg.Text;
