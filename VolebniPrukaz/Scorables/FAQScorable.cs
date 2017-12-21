@@ -78,24 +78,7 @@ namespace VolebniPrukaz.Scorables
         protected string GetHelpText()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Voličský průkaz je důležitý pro všechny, kteří vědí, že v době prezidentských voleb (tedy 12. a 13. ledna 2018) " +
-                "nebudou v místě svého trvalého bydliště. S platným voličským průkazem lze volit v jakémkoliv městě v Česku anebo v zahraničí na české ambasádě. " +
-                "S naším chatbotem vytvoříte žádost o volební průkaz během pár minut. Stačí zadat Vaše osobní údaje a chatbot Vám žádost automaticky vygeneruje.\n"
-                );
-            sb.AppendLine("CO S ŽÁDOSTÍ O VOLIČSKÝ PRŮKAZ UDĚLAT?\n");
-            sb.AppendLine("Je nutné ji nejpozději do 5.1.2018 doručit na úřad v místě Vašeho trvalého bydliště. " +
-                "Můžete ji tam zaslat buď datovou schránkou anebo ji vytisknout, podepsat, podpis nechat úředně ověřit " +
-                "(např. na úřadech a v CzechPOINTech České pošty - zdarma) a odeslat poštou.\n"
-                );
-            sb.AppendLine("Pro voličský průkaz si pak na úřad můžete dojít osobně anebo si ho nechat zaslat na předem určenou adresu. " +
-                "Můžete také pověřit člena rodiny či známého, aby průkaz vyzvedl za Vás. " +
-                "V tom případě ovšem musíte tuto osobu vybavit plnou mocí s Vaším úředně ověřeným podpisem. " +
-                "I s vygenerováním této plné moci Vám náš chatbot ovšem rád pomůže.\n"
-                );
-            sb.AppendLine("Do 10. ledna můžete o svůj voličský průkaz na příslušném úřadě požádat také osobně. " +
-                "V tom případě nemusíte sepisovat papírovou žádost, úředník jen zkontroluje Vaši totožnost, " +
-                "požadavek si zaznamená a domluví se s Vámi na způsobu předání průkazu."
-                );
+            sb.AppendLine("Volit prezidenta můžete v ČR všude, v zahraničí na české ambasádě. Potřebujete k tomu voličský průkaz. Ten získáte, pokud na úřad vašeho trvalého bydliště doručíte do 5.1. žádost, kterou si zde vygenerujete. Pošlete ji tam datovkou anebo poštou s úředně ověřeným podpisem. Průkaz si potom vyzvednete osobně, úřad vám ji zašle na určenou adresu anebo Vám jej vyzvedne zmocněná osoba. Do 10.1. si ho na úřadě můžete vyzvednou i osobně.");
             return sb.ToString();
         }
     }
